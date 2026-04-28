@@ -59,8 +59,8 @@ OpenCV HUD overlay           ← glassmorphism panels + animated +1 flash
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/Shiven01000/AI-Fitness-Coach.git
-cd AI-Fitness-Coach
+git clone https://github.com/Shiven01000/FormAI.git
+cd FormAI
 
 # 2. Create and activate a virtual environment
 python3 -m venv venv
