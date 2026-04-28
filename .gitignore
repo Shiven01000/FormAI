@@ -19,3 +19,6 @@ env/
 # Environment variables
 .env
 .env.*
+
+# Claude Code internal files
+.claude/
