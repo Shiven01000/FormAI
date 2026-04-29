@@ -439,7 +439,6 @@ def main():
                         [landmarks[r_b].x, landmarks[r_b].y],
                         [landmarks[r_c].x, landmarks[r_c].y],
                     )
-                    # Whichever arm deviates more from fully straight is active
                     if abs(angle_left - 180) >= abs(angle_right - 180):
                         current_angle, active_joint = angle_left, idx_b
                     else:

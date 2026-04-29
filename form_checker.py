@@ -1,3 +1,4 @@
+
 class FormChecker:
     """
     Dispatches per-exercise form checks via getattr, returning (feedback, good_form).
@@ -16,12 +17,15 @@ class FormChecker:
     # ── Per-exercise checks ───────────────────────────────────────────────────
 
     def _check_bicep_curl(self, landmarks, angle, stage):
-        """Flag elbow drift only when BOTH arms drift. The resting arm naturally
-        sits away from the hip, so checking max() caused constant false positives."""
-        left_drift  = abs(landmarks[13].x - landmarks[23].x)
-        right_drift = abs(landmarks[14].x - landmarks[24].x)
-        if left_drift > 0.10 and right_drift > 0.10:
-            return ("Keep elbow at your side", False)
+        """Detect elbow flaring by comparing elbow span to shoulder span.
+        Skipped at the peak (angle < 60°) where forearms are vertical and
+        elbows naturally sit slightly wider than shoulders."""
+        if angle < 60:
+            return ("Good form!", True)
+        shoulder_width = abs(landmarks[11].x - landmarks[12].x)
+        elbow_width    = abs(landmarks[13].x - landmarks[14].x)
+        if elbow_width > shoulder_width + 0.05:
+            return ("Keep elbows in", False)
         return ("Good form!", True)
 
     def _check_squat(self, landmarks, angle, stage):
