@@ -11,7 +11,7 @@ FormAI uses your webcam and MediaPipe's pose estimation to count exercise reps a
 - **Automatic rep counting** — joint angles are tracked frame-by-frame; a rep registers only when the full range of motion is completed
 - **Form feedback** — colored skeleton (green/orange) and on-screen text cue common mistakes per exercise
 - **Good-form gate** — reps performed with bad form are silently skipped so the count reflects quality work
-- **Bilateral tracking** — for two-arm exercises the more-active arm drives the count automatically
+- **Bilateral limb tracking** — automatically detects whichever arm or leg is actively moving using per-frame angle comparison with noise clamping
 - **Voice feedback** — Mac TTS announces milestones and form corrections without interrupting the video loop
 - **Session summary** — per-exercise rep breakdown shown on-screen and in the terminal at the end of each session
 - **6 exercises** — bicep curl, squat, pushup, shoulder press, lunge, lateral raise
@@ -110,4 +110,6 @@ For a technical deep-dive into the design decisions (angle math, state machine, 
 - **Side-view only for lower body** — knee angle accuracy drops when facing the camera directly; a front-facing squat mode would require a different landmark set
 - **Single-person** — only the first detected pose is processed
 - **macOS TTS** — voice feedback calls `say`, which is Mac-only; Linux/Windows would need a cross-platform TTS library
+- **Form checks suspended at peak curl angle (< 60°)** — elbow span naturally exceeds shoulder span when forearms are vertical, making threshold-based detection unreliable at the peak. A depth camera would resolve this.
+- **Pushup and lunge detection is sensitive to camera angle and distance** — works best when the full body is visible from the side
 - **Planned:** iPhone app using AVFoundation + Create ML for on-device inference

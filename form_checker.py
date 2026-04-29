@@ -17,9 +17,19 @@ class FormChecker:
     # ── Per-exercise checks ───────────────────────────────────────────────────
 
     def _check_bicep_curl(self, landmarks, angle, stage):
-        """Detect elbow flaring by comparing elbow span to shoulder span.
-        Skipped at the peak (angle < 60°) where forearms are vertical and
-        elbows naturally sit slightly wider than shoulders."""
+        """Detect elbow flaring by comparing the horizontal span between both
+        elbows (landmarks 13–14) against the span between both shoulders
+        (landmarks 11–12). This ratio is body-relative and stays constant
+        throughout the curl, so it reliably flags outward drift without being
+        fooled by arm position.
+
+        Skipped when angle < 60° (peak of the curl): at that point the forearms
+        are nearly vertical and both elbows sit geometrically wider than the
+        shoulders even with perfect form, making the span comparison unreliable.
+        This is a known geometric limitation; a depth camera would remove it.
+
+        This check is stateless — no per-rep memory is kept. The form indicator
+        reflects the current frame only."""
         if angle < 60:
             return ("Good form!", True)
         shoulder_width = abs(landmarks[11].x - landmarks[12].x)

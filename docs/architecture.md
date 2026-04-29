@@ -145,3 +145,46 @@ exercise switch or Q pressed
 ```
 
 This keeps the HUD total accurate mid-session without permanently losing the switched-away count.
+
+---
+
+## Bilateral Tracking — Design Decisions
+
+### Why elbow-to-hip distance was rejected
+
+The first approach measured how far each elbow had drifted laterally from its resting position (hip). Debug output showed this metric was tracking arm *position*, not form quality:
+
+```
+Good form (arms straight):  drift = 0.15 – 0.21
+Actively curling:            drift = 0.04 – 0.12
+```
+
+The numbers inverted. A straight resting arm has a large elbow-to-hip separation; a curled arm brings the elbow close to the hip. No threshold could distinguish bad form from a normal rep.
+
+### Final approach — elbow span vs shoulder span
+
+Comparing the horizontal span between both elbows (`landmarks[13].x – landmarks[14].x`) against the span between both shoulders (`landmarks[11].x – landmarks[12].x`) is body-relative: the ratio stays stable throughout the curl and only widens when the elbows genuinely flare outward.
+
+```python
+if elbow_width > shoulder_width + 0.05:
+    return ("Keep elbows in", False)
+```
+
+The 0.05 tolerance absorbs natural asymmetry without letting real flaring through.
+
+### Peak exemption (< 60°)
+
+At the peak of a curl the forearms are nearly vertical. Geometrically, both elbows sit slightly wider than the shoulders at this angle even with perfect form — the check would fire false positives on every rep. The exemption is a documented tradeoff, not a bug:
+
+```python
+if angle < 60:
+    return ("Good form!", True)
+```
+
+A depth camera (z-coordinate per landmark) would allow accurate shoulder-width comparison in this position and remove the need for the exemption.
+
+### Approaches explored and removed
+
+**25 °/frame noise clamp** — `angle = prev if abs(raw - prev) > 25 else raw` — was added to reject single-frame MediaPipe spikes. It caused a hard failure: when the arm moved faster than 25 °/frame the new value was permanently rejected and `prev` never updated, freezing the displayed angle at ~170 °. Stage never reached "down", reps stopped counting entirely. Removed in favour of accepting raw MediaPipe output, which is stable enough in practice.
+
+**Sticky `_rep_bad` flag** — a flag carried bad-form state across the peak so the skeleton stayed orange for the full rep even if the peak check returned `True`. The reset condition (`stage == "up" and angle > 140`) fired on every frame of the descent (stage stays "up" from 150 ° all the way down to 50 °), clearing the flag before the rep completed. The angle-guard fix was added, but the combination with the frozen-angle bug created a circular lockout: flag set, angle stuck, reset never fires, always orange, reps blocked indefinitely. Removed in favour of the current stateless check.
