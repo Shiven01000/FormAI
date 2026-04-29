@@ -2,7 +2,7 @@
 
 FormAI uses your webcam and MediaPipe's pose estimation to count exercise reps automatically and give real-time form feedback — no wearables, no gym equipment required.
 
-> **Demo:** *(recording coming soon)*
+![Demo](assets/demo.gif)
 
 ---
 
